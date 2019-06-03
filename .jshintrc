@@ -1,0 +1,40 @@
+{
+	"browser": true,
+    // eqeqeq: true,
+    "esversion":6,    //支持es6写法
+    "eqnull": true,
+    "undef": true,
+    "laxbreak": true, //不检查换行
+    "scripturl": true, //容忍javascript:void(0)
+    "devel": true, // 允许alert,console
+    "loopfunc": true, //允许循环内写闭包函数
+    "globals": {
+        "_": true,
+        "$": true,
+        "jQuery": true,
+        "Backbone": true,
+        "seajs": true,
+        "define": true,
+        "File": true,
+        "FS": true,
+        "Zclip": true,
+        "scheduler": true,
+        "dhtmlXScheduler": true,
+        "$t": true,
+        "Vue": true,
+        "Vuex": true
+    },
+    "-W030": true, //忽略：一行内有多条表达式，a = b, c = d;
+    "-W018": true, //忽略：Confusing use of "!"
+    "-W084": true, //忽略：表达式内变量赋值，if(a = fn())
+    "-W069": true, //忽略：["{a}"] is better written in dot notation
+    "-W041": true, //忽略：Use "===" to compare with
+    "-W033": true, //忽略: Missing semicolon漏掉分号
+    "-W032": true, //忽略：Unnecessary semicolon 不必要的分号
+    "-W099": true, //忽略： Mixed spaces and tabs
+    "-W065": true, //忽略：parseInt的第二个参数Missing radix 
+    "-W044": true, //忽略：Bad or unnecessary escaping
+    "-W092": true, //忽略：Wrap the /regexp/ literal in parens to disambiguate the slash operator 
+    "-W054": true, //忽略：The Function constructor is a form of eval.
+    "-W093": true //忽略：Did you mean to return a conditional instead of an assignment return a = true.
+}

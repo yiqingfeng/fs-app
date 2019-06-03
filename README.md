@@ -1,14 +1,13 @@
-## fsapp
+## 主站 app 子项目
 
-一键创建 app FS web子项目，提供最新的 app 项目构建方式
-
-### 使用方法
+### 本地开发
 
 ```bash
-npm install fsapp -g
-cd ./fs/app
-fsapp init your_project
-# your config
-cd your_project
+npm run dev 或 npm run start
 ```
 
+### 编译发布
+
+```
+npm run build-release
+```
