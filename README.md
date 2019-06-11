@@ -11,3 +11,9 @@ npm run dev 或 npm run start
 ```
 npm run build-release
 ```
+
+支持的功能点：
+
+- 模块热加载
+- 模板编译控制 （-v.html 文件不会被编译）
+- 统一方法处理

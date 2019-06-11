@@ -1,5 +1,5 @@
 {
-	"name": "demo",
+	"name": "{{name}}",
 	"version": "1.0.0",
 	"description": "create a project for FS web",
 	"main": "Gruntfile.js",
