@@ -1,6 +1,6 @@
 ## fsapp
 
-一键创建 app FS web子项目，提供最新的 app 项目构建方式
+一键创建 app FS web子项目，提供最新的 app 项目构建
 
 ### 使用方法
 
