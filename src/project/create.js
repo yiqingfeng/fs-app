@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const fs = require("fs");
+const fs = require("fs-extra");
 const util = require("util");
 const inquirer = require("inquirer");
 const download = require("download-git-repo");
@@ -10,65 +10,59 @@ const handlebars = require("handlebars");
 const shell = require("shelljs");
 
 const writeFile = util.promisify(fs.writeFile);
+const Download = util.promisify(download);
 
 const downloadUrl = "github:Gavin-js/vue-sample#master";
+const downloadRegistry = "Download:https://github.com/Gavin-js/vue-sample.git";
 
 /**
  * 检测是否已存在目录
- * @param {String} fileName
+ * @param {String} targetDir
  */
-function checkFileIsExists(fileName) {
-  return new Promise((resolve, reject) => {
-    if (fileName && fs.existsSync(fileName)) {
-      shell.echo("\n");
-      inquirer
-        .prompt([
-          {
-            type: "confirm",
-            name: "isExists",
-            message: "项目已存在是否覆盖?"
-          }
-        ])
-        .then(({ isExists }) => {
-          if (isExists) {
-            shell.rm("-rf", fileName);
-            resolve();
-          } else {
-            reject(`${fileName} 已取消`);
-          }
-        });
-      return;
+async function checkFileIsExists(targetDir) {
+  if (!targetDir) return;
+  console.log("\n");
+  const { ok } = await inquirer.prompt([
+    {
+      name: "ok",
+      type: "confirm",
+      message: `是否在当前目录创建项目？`
     }
-    resolve();
-  });
+  ]);
+  if (!ok) {
+    return;
+  }
+  if (fs.existsSync(targetDir)) {
+    const { isExists } = await inquirer.prompt([
+      {
+        type: "confirm",
+        name: "isExists",
+        message: "项目已存在是否覆盖?"
+      }
+    ]);
+    if (isExists) {
+      console.log(`删除 ${chalk.cyan(targetDir)}...`);
+      // shell.rm("-rf", targetDir);
+      await fs.remove(targetDir);
+    }
+  }
 }
 
 /**
  * 下载samples
  * @param {Object} args
  */
-function downloadTpl(args) {
-  return new Promise((resolve, reject) => {
-    const spinner = ora(
-      `Download:https://github.com/Gavin-js/vue-sample.git`
-    ).start();
-    download(
-      downloadUrl,
-      args.fileName,
-      {
-        clone: true
-      },
-      err => {
-        if (err) {
-          spinner.fail();
-          reject(err);
-          return;
-        }
-        spinner.succeed();
-        resolve(args);
-      }
-    );
+async function downloadTpl(args) {
+  const spinner = ora(downloadRegistry).start();
+  const err = await Download(downloadUrl, args.fileName, {
+    clone: true
   });
+  if (!err) {
+    spinner.succeed();
+  } else {
+    spinner.fail();
+  }
+  return args;
 }
 
 /**
@@ -92,28 +86,24 @@ async function createPackageJson(result) {
   return result;
 }
 
-function installProjectDep(result) {
-  return new Promise((resolve, reject) => {
-    const spinner = ora(`正在安装项目依赖...`).start();
-    const command = shell.which("cnpm")
-      ? "cnpm"
-      : shell.which("yarn")
-      ? "yarn"
-      : "npm";
-    shell.exec(
-      `cd ${result.fileName} && ${command} install`,
-      { silent: true },
-      function(code, stdout, stderr) {
-        if (code == 0) {
-          spinner.succeed();
-          resolve(result);
-        } else {
-          spinner.fail();
-          reject(stderr);
-        }
-      }
-    );
-  });
+async function installProjectDep(result) {
+  const spinner = ora(`正在安装项目依赖...`).start();
+  const command = shell.which("cnpm")
+    ? "cnpm"
+    : shell.which("yarn")
+    ? "yarn"
+    : "npm";
+  const { code, stderr } = await shell.exec(
+    `cd ${result.fileName} && ${command} install`,
+    { silent: true }
+  );
+  if (code == 0) {
+    spinner.succeed();
+  } else {
+    spinner.fail();
+    console.log(symbols.error, chalk.red(stderr));
+  }
+  return result;
 }
 /**
  * 创建项目
@@ -148,8 +138,8 @@ function create(fileName) {
     .then(createPackageJson)
     .then(installProjectDep)
     .then(result => {
-      shell.echo("\n");
       console.log(
+        "\n",
         symbols.success,
         `${chalk.green(`恭喜您，${result.fileName} 创建成功`)}\n`
       );
