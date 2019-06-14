@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const fs = require("fs");
+const util = require("util");
 const inquirer = require("inquirer");
 const download = require("download-git-repo");
 const ora = require("ora");
@@ -7,7 +8,8 @@ const chalk = require("chalk");
 const symbols = require("log-symbols");
 const handlebars = require("handlebars");
 const shell = require("shelljs");
-const { exec } = require("child_process");
+
+const writeFile = util.promisify(fs.writeFile);
 
 const downloadUrl = "github:Gavin-js/vue-sample#master";
 
@@ -72,35 +74,32 @@ function downloadTpl(args) {
 /**
  * 生成 package.json文件
  */
-function createPackageJson(result) {
-  return new Promise((resolve, reject) => {
-    const fileName = `${result.fileName}/package.json`;
-    if (fs.existsSync(fileName)) {
-      const template = fs.readFileSync(fileName).toString();
-      const content = handlebars.compile(template)({
-        name: result.name,
-        description: result.description,
-        version: result.version
-      });
-      fs.writeFile(fileName, content, err => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        resolve(result);
-      });
+async function createPackageJson(result) {
+  const fileName = `${result.fileName}/package.json`;
+  if (fs.existsSync(fileName)) {
+    const template = fs.readFileSync(fileName).toString();
+    const content = handlebars.compile(template)({
+      name: result.name,
+      description: result.description,
+      version: result.version
+    });
+    const err = await writeFile(fileName, content);
+    if (err) {
+      return;
     }
-  });
+  }
+
+  return result;
 }
 
 function installProjectDep(result) {
   return new Promise((resolve, reject) => {
     const spinner = ora(`正在安装项目依赖...`).start();
     const command = shell.which("cnpm")
-    ? "cnpm"
-    : shell.which("yarn")
+      ? "cnpm"
+      : shell.which("yarn")
       ? "yarn"
-      :  "npm";
+      : "npm";
     shell.exec(
       `cd ${result.fileName} && ${command} install`,
       { silent: true },
